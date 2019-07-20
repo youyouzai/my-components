@@ -1,7 +1,7 @@
 <template>
   <div class="hello">
-    <simple-table :options="options" style="width: 100%">
-       <el-table-column
+    <simple-table :options="options"  border stripe size="mini" style="width: 100%" :highlightCurrentRow="true">
+       <!-- <el-table-column
         prop="date"
         label="日期11"
         width="180">
@@ -14,7 +14,7 @@
       <el-table-column
         prop="address"
         label="地址333">
-      </el-table-column>
+      </el-table-column> -->
     </simple-table>
   </div>
 </template>
@@ -53,7 +53,7 @@ export default {
     getOptions(){
       return {
         // url: 'http://localhost:3000/users',
-        columns: this.getColumns1(),
+        columns: this.getColumns(),
         data: this.getData()
       }
     },
@@ -69,15 +69,35 @@ export default {
         return [
             { type: 'selection',  width: 180},
             { label: '商品', prop: 'name',  width: 180, render: this.nameRender},
-            { label: '图片', prop: 'imgUrl',  contentType: 'img', filter: this.imgRender},
+            { label: '图片', prop: 'imgUrl',  contentType: 'img', formatter: this.imgRender},
+            { label: '图标', prop: 'icon',  contentType: 'icon', formatter: this.iconRender},
             { label: '链接', prop: 'product',  contentType: 'anchor', url: 'http://www.google.com', width: 180},
-            { label: '操作', contentType: 'buttons', data: [{label: '查看', click: 'onViewClick'}, {label: '编辑', click: 'onEditClick'}]},
+            { label: '操作', contentType: 'buttons', data: [{label: '查看', type: 'primary', click: this.onViewClick}, {label: '编辑', type: 'primary', click: this.onEditClick}]},
         ]
     },
     getData(){
-        return [{name: 'lzg', imgUrl: '/google', product: '手机'}]
+        return [{name: 'lzg1', status: 1,  imgUrl: 'https://p.ssl.qhimg.com/dmfd/400_300_/t0120b2f23b554b8402.jpg', product: '手机'},
+        {name: 'lzg2', status: 1,  imgUrl: 'https://p.ssl.qhimg.com/dmfd/400_300_/t0120b2f23b554b8402.jpg', product: '手机'},
+        {name: 'lzg3', status: 2,  imgUrl: 'https://p.ssl.qhimg.com/dmfd/400_300_/t0120b2f23b554b8402.jpg', product: '手机'},
+        {name: 'lzg4', status: 2,  imgUrl: '/google', product: '手机'},
+        {name: 'lzg5', status: 1,  imgUrl: '/google', product: '手机'}]
     },
+    iconRender(row) {
+      return row.status == 1? 'el-icon-eleme' : 'el-icon-user-solid'
+    },
+    onViewClick(row){
+      console.log(JSON.stringify(row))
+    },
+    onEditClick(row){
+      console.log(JSON.stringify(row))
+    }
   }
 }
 </script>
+<style>
+.table-header{
+  background-color: red !important;
+}
+</style>
+
 

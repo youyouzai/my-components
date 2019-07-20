@@ -1,12 +1,36 @@
 <template>
   <div>
        <el-table
-        ref="multipleTable"
+        ref="table"
         :data="tableData"
         :height="height"
         :border="border"
         :stripe="stripe"
         :show-header="showHeader"
+        :highlight-current-row="highlightCurrentRow"
+        :current-row-key="currentRowKey"
+        :row-class-name="rowClassName"
+        :row-style="rowStyle"
+        :cell-class-name="cellClassName"
+        :cell-style="cellStyle"
+        :header-row-class-name="headerRowClassName"
+        :header-row-style="headerRowStyle"
+        :header-cell-class-name="headerCellClassName"
+        :header-cell-style="headerCellStyle"
+        :row-key="rowKey"
+        :empty-text="emptyText"
+        :expand-row-keys="expandRowKeys"
+        :default-sort="defaultSort"
+        :tooltip-effect="tooltipEffect"
+        :show-summary="showSummary"
+        :sum-text="sumText"
+        :summary-method="summaryMethod"
+        :span-method="spanMethod"
+        :select-on-indeterminate="selectOnIndeterminate"
+        :indent="indent"
+        :lazy="lazy"
+        :load="load"
+        :tree-props="treeProps"
         style="width: 100%">
             <template v-if="options">
                 <el-table-column v-if="hasCheckBox"  type="selection" width="70"></el-table-column>
@@ -41,7 +65,10 @@
 import './table-render'
 import {httpGet} from  '@/util/http'
 export default {
-    props:['options', 'data', 'height', 'stripe', 'border', 'size', 'showHeader'],
+    props:['options', 'data', 'height', 'stripe', 'border', 'size', 'showHeader', 'fit', 'highlight-current-row', 'current-row-key', 
+        'row-class-name', 'row-style', 'cell-class-name', 'cell-style', 'header-row-class-name', 'header-row-style', 'header-cell-class-name', 
+        'header-cell-style', 'row-key', 'empty-text', 'expand-row-keys', 'default-sort', 'tooltip-effect', 
+        'show-summary', 'sum-text', 'summary-method', 'span-method', 'select-on-indeterminate', 'indent', 'lazy', 'load', 'tree-props'],
     data(){
         return {
             url: '',
@@ -87,7 +114,7 @@ export default {
             }
             const request = this.httpGet_ || httpGet;
             const response = await request(this.url, this.form);
-            this.data = response.data;
+            this.options.data = response.data;
             const totalField = this.options.totalField || 'totalCount'
             this.totalCount = response[totalField];
         },
