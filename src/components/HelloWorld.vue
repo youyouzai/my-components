@@ -1,5 +1,9 @@
 <template>
   <div class="hello">
+    <div class="container">  
+      <simple-select v-model="form.country" :data="selectDataSource" label-field="name" value-field="code" @change="onCountryChange"></simple-select>
+      <span> {{ `country: ${form.country}` }}</span>
+    </div>
     <simple-table :options="options"  border stripe size="mini" style="width: 100%" :highlightCurrentRow="true">
        <!-- <el-table-column
         prop="date"
@@ -21,15 +25,20 @@
 
 <script>
 import SimpleTable from './simple-table'
+import SimpleSelect from './simple-select'
 export default {
   name: 'HelloWorld',
-  components: { SimpleTable }, 
+  components: { SimpleTable, SimpleSelect }, 
   props: {
     msg: String
   },
   data(){
     return {
       options: this.getOptions(),
+      form: {
+        country: 'english',
+      },
+      selectDataSource: [{name: '中国', code: 'cn'}, {name:'英国', code: 'english'}],
       tableData: [{
             date: '2016-05-02',
             name: '王小虎',
@@ -47,6 +56,13 @@ export default {
             name: '王小虎',
             address: '上海市普陀区金沙江路 1516 弄'
           }]
+    }
+  },
+  watch: {
+    ['form.country']:{
+      handler: (val) => {
+        console.log('country=' +val);
+      }  
     }
   },
   methods: {
@@ -83,13 +99,16 @@ export default {
         {name: 'lzg5', status: 1,  imgUrl: '/google', product: '手机'}]
     },
     iconRender(row) {
-      return row.status == 1? 'el-icon-eleme' : 'el-icon-user-solid'
+      return row.status == 1? 'el-icon-circle-check color-success' : 'el-icon-user-solid'
     },
     onViewClick(row){
       console.log(JSON.stringify(row))
     },
     onEditClick(row){
       console.log(JSON.stringify(row))
+    },
+    onCountryChange(value){
+      console.log('change=' + value)
     }
   }
 }
@@ -97,6 +116,13 @@ export default {
 <style>
 .table-header{
   background-color: red !important;
+}
+.color-success {
+  font-size: 22px;
+  color: #13ce66;
+}
+.container{
+  margin: 15px;
 }
 </style>
 
