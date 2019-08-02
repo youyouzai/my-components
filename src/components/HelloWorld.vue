@@ -1,10 +1,15 @@
 <template>
   <div class="hello">
     <div class="container">  
-      <simple-select v-model="form.country" :data="selectDataSource" label-field="name" value-field="code" @change="onCountryChange"></simple-select>
-      <span> {{ `country: ${form.country}` }}</span>
+      <el-form>
+        <el-form-item>
+          <simple-select v-model="form.country" :url="getCountrys()"  label-field="countryName" value-field="countryCode" @change="onCountryChange"></simple-select>
+          <span> {{ `country: ${form.country}` }}</span>
+        </el-form-item>
+      </el-form>
+      
     </div>
-    <simple-table :options="options"  border stripe size="mini" style="width: 100%" :highlightCurrentRow="true">
+    <simple-table :options="options" :data="tableData"  border stripe size="mini" style="width: 100%" :highlightCurrentRow="true">
        <!-- <el-table-column
         prop="date"
         label="日期11"
@@ -25,7 +30,9 @@
 
 <script>
 import SimpleTable from './simple-table'
-import SimpleSelect from './simple-select'
+import SimpleSelect from './simple-select1'
+import { httpGet } from  '@/util/http'
+import { setTimeout } from 'timers';
 export default {
   name: 'HelloWorld',
   components: { SimpleTable, SimpleSelect }, 
@@ -36,10 +43,23 @@ export default {
     return {
       options: this.getOptions(),
       form: {
-        country: 'english',
+        country: ['cn'],
       },
       selectDataSource: [{name: '中国', code: 'cn'}, {name:'英国', code: 'english'}],
-      tableData: [{
+      tableData: []
+    }
+  },
+  watch: {
+    ['form.country']:{
+      handler: (val) => {
+        console.log('country=' +val);
+      }  
+    }
+  },
+  mounted() {
+    const _self = this;
+    setTimeout(function() {
+      _self.tableData = [{
             date: '2016-05-02',
             name: '王小虎',
             address: '上海市普陀区金沙江路 1518 弄'
@@ -56,22 +76,21 @@ export default {
             name: '王小虎',
             address: '上海市普陀区金沙江路 1516 弄'
           }]
-    }
-  },
-  watch: {
-    ['form.country']:{
-      handler: (val) => {
-        console.log('country=' +val);
-      }  
-    }
+    }, 1000)
   },
   methods: {
     getOptions(){
       return {
-        // url: 'http://localhost:3000/users',
+        url: this.getTableData(),
         columns: this.getColumns(),
-        data: this.getData()
+        // data: this.getData()
       }
+    },
+    getCountrys() {
+      return httpGet('http://localhost:3000/countrys');
+    },
+    getTableData() {
+      return httpGet('http://localhost:3000/users');
     },
     getColumns1(){
         return [

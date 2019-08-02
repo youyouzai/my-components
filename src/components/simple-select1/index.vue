@@ -1,14 +1,14 @@
 <template>
-    <div  class="select-country-wrap mt20">
-        <el-input v-model="condition" :rules="[]" placeholder="选择国家或输入国家关键词" @change="search"></el-input>
-        <div class="country-panel">
-            <el-row>
+    <div  class="u-simple-select">
+        <el-input v-model="condition" :placeholder="placeholder" @input="search"></el-input>
+        <div class="panel">
+            <el-row class="item">
                 <el-col :span="18">全部</el-col>
                 <el-col :span="6">
                     <el-checkbox v-model="selectedAll" :disabled="disabled" @change="onAllSelectedChange"></el-checkbox>
                 </el-col>
             </el-row>
-            <el-row v-for="(item, index) in dataList" :key="index">
+            <el-row v-for="(item, index) in dataList" :key="index" class="item">
                 <el-col :span="18">{{ item[labelField] }}</el-col>
                 <el-col :span="6">
                     <el-checkbox v-model="item.selected" :disabled="disabled"></el-checkbox>
@@ -19,12 +19,15 @@
 </template>
 
 <script>
-    import { getCountrys } from '@/common/baseApi';
+    import { httpGet } from  '@/util/http'
+    import { getField } from  '@/util/util'
 
     export default {
         props: {
+            url: {
+                default: ''
+            },
             value: {
-                type: Array,
                 default: ()=> []
             },
             disabled: {
@@ -38,11 +41,18 @@
             valueField: {
                 type: String,
                 default: 'value'
+            },
+            dataField: {
+                type: String,
+                default: ''
+            },
+            placeholder: {
+                type: String,
+                default: '请输入查询条件'
             }
         },
         data() {
             return {
-                field: 'countryName',
                 selectedAll: false,
                 dataMap: {},
                 dataList: [],
@@ -57,29 +67,43 @@
                     for (const key in newVal) {
                         const country = newVal[key];
                         if (country.selected) {
-                            result.push(country.countryCode);
+                            result.push(country[this.valueField]);
                         }
                     }
-                    this.$emit('change', this.prop, result);
+                    this.$emit('input', result);
                 },
                 deep: true
             }
         },
         mounted() {
-            this.query();
+            this.init();
         },
         methods: {
-            query() {
-                getCountrys().then((res) => {
-                    const map = {};
-                    const selectedArr = this.selectedValue;
-                    res.forEach((item) => {
-                        item.selected = (selectedArr.indexOf(item.countryCode) > -1);
-                        map[item[this.field]] = item;
-                    });
-                    this.dataMap = map;
-                    this.dataList = res;
+            init(params) {
+                this.query(params);     
+            },
+            async query(params) {
+                if(!this.url) return;
+                var _self = this;
+                if(this.url.then){
+                    // 是promise对象
+                    this.url.then(response => {
+                        _self.queryHandler(getField(response, _self.dataField));
+                    })
+                }else if(typeof(this.url) === 'string'){
+                    const { data } = await httpGet(_self.url, { params });
+                    _self.queryHandler(data);
+                }
+            },
+            queryHandler(data) {
+                const map = {};
+                data.forEach((item) => {
+                    const key = item[this.valueField];
+                    item.selected = (this.value.indexOf(key) > -1);
+                    map[key] = item;
                 });
+                this.dataMap = map;
+                this.dataList = data;
             },
             search() {
                 const reg = /\s*,\s*/;
@@ -92,7 +116,7 @@
                     } else {
                         for (let i = 0; i < conditions.length; i++) {
                             const value = conditions[i].toUpperCase();
-                            if (item.countryName.toUpperCase().indexOf(value) > -1) {
+                            if (value !=='' && item[this.labelField].toUpperCase().indexOf(value) > -1) {
                                 arr.push(item);
                                 break;
                             }
@@ -111,17 +135,23 @@
 
 </script>
 <style lang="less" scoped>
-    .select-country-wrap {
+    .u-simple-select {
+        width: 100%;
         max-width: 500px;
-        .country-panel {
-            height: 380px;
+        .panel {
+            max-height: 380px;
             border: 1px solid #bfcbd9;
             outline: 0;
             padding: 3px 10px;
             transition: border-color .2s cubic-bezier(.645,.045,.355,1);
             border-radius: 3px;
-            overflow-y: scroll;
+            overflow-y: auto;
             margin-top: 20px;
+        }
+        .item{
+            line-height: 36px;
+            text-align: left;
+            font-size: 14px;
         }
     }
 </style>

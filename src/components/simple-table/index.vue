@@ -63,7 +63,8 @@
 
 <script>
 import './table-render'
-import {httpGet} from  '@/util/http'
+import { httpGet } from  '@/util/http'
+import { getField } from  '@/util/util'
 export default {
     props:['options', 'data', 'height', 'stripe', 'border', 'size', 'showHeader', 'fit', 'highlight-current-row', 'current-row-key', 
         'row-class-name', 'row-style', 'cell-class-name', 'cell-style', 'header-row-class-name', 'header-row-style', 'header-cell-class-name', 
@@ -76,6 +77,7 @@ export default {
                 pageSize: 10,
                 pageNo: 1,
             },
+            tableData: [],
             totalCount: 0,
         }
     },
@@ -95,28 +97,43 @@ export default {
                 return column.type === 'selection'
             })
         },
-        tableData(){
-            return this.data || this.options.data
+        dataField() {
+            return this.options.dataField || 'data'
+        },
+        totalField() {
+            return this.options.totalField || 'totalCount'
+        }
+    },
+    watch: {
+        data(val){
+            this.tableData = val;
         }
     },
     mounted() {
         if(this.options) {
             this.url = this.options.url;
+            this.tableData = this.options.data;
             this.query();
         }
+        this.tableData = this.data;
     },
     methods: {
         async query(params) {
             if(!this.url) return;
-            this.form = {
-                ...this.form,
-                ...params
-            }
-            const request = this.httpGet_ || httpGet;
-            const response = await request(this.url, this.form);
-            this.options.data = response.data;
-            const totalField = this.options.totalField || 'totalCount'
-            this.totalCount = response[totalField];
+            if(this.url.then) {
+                // 是promise对象
+                const _self = this;
+                this.url.then((response) => {
+                    _self.initDataByResponse(response)
+                })
+            } else if(typeof(this.url) === 'string'){
+                this.form = {
+                    ...this.form,
+                    ...params
+                }
+                const { data } = await httpGet(this.url, this.form);
+                this.initDataByResponse(data)
+            }  
         },
         reset(){
            this.pageSize = 10
@@ -130,7 +147,11 @@ export default {
         changeSize (val) {
             this.option.pageSize = val;
             this.query();
-        },
+        }, 
+        initDataByResponse(response) {
+            this.tableData = getField(response, this.dataField);
+            this.totalCount = getField(response, this.totalField);
+        }
     }
 }
 

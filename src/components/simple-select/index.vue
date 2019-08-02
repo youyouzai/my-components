@@ -11,10 +11,11 @@
 </template>
 
 <script>
+import { httpGet } from  '@/util/http'
+import { getField } from  '@/util/util'
 export default {
     props: {
         url: {
-            type: String,
             default: ''
         },
         data: {
@@ -43,24 +44,27 @@ export default {
         filterable: {
             type: Boolean,
             default: true
+        },
+        dataField: {
+            type: String,
+            default: 'data'
         }
     },
     data() {
         return {
-            value: {
-
-            }
+            value: {},
+            dataSource: []
         }
     },
     computed: {
         list() {
-            if(toString.call(this.data === '[object Array]')){
-                return this.data;
-            }else if(toString.call(this.data === '[object Object]')){
+            if(toString.call(this.dataSource === '[object Array]')){
+                return this.dataSource;
+            }else if(toString.call(this.dataSource === '[object Object]')){
                 let result = [];
-                for(const key in this.data) {
+                for(const key in this.dataSource) {
                     result.push({
-                        label: this.data[key],
+                        label: this.dataSource[key],
                         value: key
                     });
                 }
@@ -73,6 +77,9 @@ export default {
     watch: {
         value(val) {
             this.$emit('input', val);
+        },
+        data(val) {
+            this.dataSource = val;
         }
     },
     mounted() {
@@ -81,8 +88,17 @@ export default {
     methods: {
         async init(params) {
             if(!this.url) return;
-            const { data } = this.$http.get(this.url, { params });
-            this.data = data;
+            var _self = this;
+            if(this.url.then){
+                // 是promise对象
+                this.url.then(response => {
+                    _self.dataSource = getField(response, _self.dataField);
+                })
+            }else if(typeof(this.url) === 'string'){
+                const { data } = await httpGet(_self.url, { params });
+                _self.dataSource = data;
+            }
+            
         },
         onChange(){
             this.$emit('change', this.value)
