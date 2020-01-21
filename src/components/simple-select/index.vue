@@ -1,20 +1,24 @@
 <template>
     <el-select 
-        v-model="value" 
+        v-model="currentValue" 
         :clearable="clearable"
         :multiple="multiple"
         :filterable="filterable"
         :placeholder="placeholder"  
+        size="mini"
         @change="onChange">
-        <el-option v-for="(item,index) in list" :key="index" :value="item[valueField]" :label="item[labelField]"></el-option>
+        <el-option v-for="(item,index) in list" :key="index" :value="item.value" :label="item.label"></el-option>
     </el-select>
 </template>
 
 <script>
-import { httpGet } from  '@/util/http'
-import { getField } from  '@/util/util'
+import {getList, getDataSourceByUrl } from  '../../util/util'
 export default {
     props: {
+        value: {
+            type: [String, Number, Array],
+            default: ''
+        },
         url: {
             default: ''
         },
@@ -47,61 +51,41 @@ export default {
         },
         dataField: {
             type: String,
-            default: 'data'
+            default: ''
         }
     },
     data() {
         return {
-            value: {},
+            currentValue: null,
             dataSource: []
         }
     },
     computed: {
         list() {
-            if(toString.call(this.dataSource === '[object Array]')){
-                return this.dataSource;
-            }else if(toString.call(this.dataSource === '[object Object]')){
-                let result = [];
-                for(const key in this.dataSource) {
-                    result.push({
-                        label: this.dataSource[key],
-                        value: key
-                    });
-                }
-                return result;
-            }else {
-                return [];
-            }
+            return getList(this.dataSource, this.labelField, this.valueField);
         }
     },
     watch: {
-        value(val) {
-            this.$emit('input', val);
-        },
         data(val) {
             this.dataSource = val;
+        },
+        value(val) {
+            this.currentValue = val;
         }
     },
     mounted() {
+        this.currentValue = this.value;
+        this.dataSource = this.data;
         this.init();
     },
     methods: {
         async init(params) {
-            if(!this.url) return;
-            var _self = this;
-            if(this.url.then){
-                // 是promise对象
-                this.url.then(response => {
-                    _self.dataSource = getField(response, _self.dataField);
-                })
-            }else if(typeof(this.url) === 'string'){
-                const { data } = await httpGet(_self.url, { params });
-                _self.dataSource = data;
-            }
-            
+            const dataSource = await getDataSourceByUrl(this, params);
+            this.dataSource = dataSource;
         },
         onChange(){
-            this.$emit('change', this.value)
+            this.$emit('input', this.currentValue);
+            this.$emit('change', this.currentValue);
         }
     }
 }

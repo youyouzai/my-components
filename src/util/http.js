@@ -1,36 +1,33 @@
 import vue from 'vue';
 import { Message } from 'element-ui';
-import VueResource from 'vue-resource';
-if(!vue.http){
-    vue.use(VueResource);
-}
 
-const defaultErr = '接口发生错误';
-export function httpGet(url, options = {}) {
-    const { params, showErr = true} = options;
-    delete options.showErr;
-    delete options.cache;
-    // 兼容get请求不传params字段参数
-    options = params
-        ? {
-            ...options
-        } : {
-            params: {
-                ...options
-            }
-        };
-    return new Promise((resolve, reject) => {
-        vue.http.get(url, options).then(({ body }) => {
-            const { code, message, data } = body;
-            if (code === 0) {
-                resolve(data);
-            } else {
-                if (showErr) Message.error(message || defaultErr);
-                reject(body);
-            }
-        }, (err) => {
-            if (showErr) Message.error((err.body && err.body.message) || defaultErr);
-            reject(defaultErr);
-        });
-    });
+/**
+ * 
+ * 返回参数结构： { code: 0,  msg: '', data:[] }
+ *
+ */
+export function httpGet(url, params) {
+    let error = ''
+    // eslint-disable-next-line
+    const reg = new RegExp('(^(https?)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]$)|(^/[A-Za-z0-9-_/]+$)')
+    if(!reg.test(url)) {
+        error = 'url格式不正确！'
+    }
+    if(!vue.http) {
+        error = 'vue.http对象不存在，请添加HTTP库!'
+    }
+    if(error) {
+        Message.error(error) 
+        return Promise.reject(new Error(error))
+    }
+    return new Promise((resolve, reject) =>{       
+        vue.http.get(url, {            
+            params: params        
+        }).then(response => {
+            // Message.success('请求成功,请确认labelField和valueField!')
+            resolve(response)  
+        }).catch(err =>{
+            reject(err)        
+        })
+    })
 }

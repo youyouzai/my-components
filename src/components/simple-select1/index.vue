@@ -8,8 +8,8 @@
                     <el-checkbox v-model="selectedAll" :disabled="disabled" @change="onAllSelectedChange"></el-checkbox>
                 </el-col>
             </el-row>
-            <el-row v-for="(item, index) in dataList" :key="index" class="item">
-                <el-col :span="18">{{ item[labelField] }}</el-col>
+            <el-row v-for="(item, index) in dataSource" :key="index" class="item">
+                <el-col :span="18">{{ item.label }}</el-col>
                 <el-col :span="6">
                     <el-checkbox v-model="item.selected" :disabled="disabled"></el-checkbox>
                 </el-col>
@@ -19,13 +19,15 @@
 </template>
 
 <script>
-    import { httpGet } from  '@/util/http'
-    import { getField } from  '@/util/util'
+    import { getList, getDataSourceByUrl } from  './../../util/util'
 
     export default {
         props: {
             url: {
                 default: ''
+            },
+            data: {
+                default: ()=> []
             },
             value: {
                 default: ()=> []
@@ -55,7 +57,7 @@
             return {
                 selectedAll: false,
                 dataMap: {},
-                dataList: [],
+                dataSource: [],
                 condition: '',
             };
         },
@@ -65,45 +67,43 @@
                     // 获取选中的值
                     const result = [];
                     for (const key in newVal) {
-                        const country = newVal[key];
-                        if (country.selected) {
-                            result.push(country[this.valueField]);
+                        const item = newVal[key];
+                        if (item.selected) {
+                            result.push(item.value);
                         }
                     }
                     this.$emit('input', result);
                 },
                 deep: true
+            },
+            data() {
+                this.initDataMap(this.data);
             }
         },
         mounted() {
-            this.init();
+            if (this.data && this.data.length > 0) {
+                this.initDataMap(this.data);
+            } else {
+                this.init();
+            }
         },
         methods: {
             init(params) {
                 this.query(params);     
             },
             async query(params) {
-                if(!this.url) return;
-                var _self = this;
-                if(this.url.then){
-                    // 是promise对象
-                    this.url.then(response => {
-                        _self.queryHandler(getField(response, _self.dataField));
-                    })
-                }else if(typeof(this.url) === 'string'){
-                    const { data } = await httpGet(_self.url, { params });
-                    _self.queryHandler(data);
-                }
+                const dataSource = await getDataSourceByUrl(this, params);
+                this.initDataMap(dataSource);
             },
-            queryHandler(data) {
+            initDataMap(dataSource) {
                 const map = {};
-                data.forEach((item) => {
-                    const key = item[this.valueField];
-                    item.selected = (this.value.indexOf(key) > -1);
-                    map[key] = item;
+                const arr = getList(dataSource, this.labelField, this.valueField);
+                arr.forEach((item) => {
+                    item.selected = (this.value.indexOf(item.value) > -1);
+                    map[item.value] = item;
                 });
+                this.dataSource = arr;
                 this.dataMap = map;
-                this.dataList = data;
             },
             search() {
                 const reg = /\s*,\s*/;
@@ -116,17 +116,17 @@
                     } else {
                         for (let i = 0; i < conditions.length; i++) {
                             const value = conditions[i].toUpperCase();
-                            if (value !=='' && item[this.labelField].toUpperCase().indexOf(value) > -1) {
+                            if (value !=='' && item.label.toUpperCase().indexOf(value) > -1) {
                                 arr.push(item);
                                 break;
                             }
                         }
                     }
                 }
-                this.dataList = arr;
+                this.dataSource = arr;
             },
             onAllSelectedChange() {
-                this.dataList.forEach((item) => {
+                this.dataSource.forEach((item) => {
                     item.selected = this.selectedAll;
                 });
             }
@@ -140,7 +140,7 @@
         max-width: 500px;
         .panel {
             max-height: 380px;
-            border: 1px solid #bfcbd9;
+            border: 1px solid #DCDFE6;
             outline: 0;
             padding: 3px 10px;
             transition: border-color .2s cubic-bezier(.645,.045,.355,1);

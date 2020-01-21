@@ -3,34 +3,34 @@
        <el-table
         ref="table"
         :data="tableData"
-        :height="height"
-        :border="border"
-        :stripe="stripe"
-        :show-header="showHeader"
-        :highlight-current-row="highlightCurrentRow"
-        :current-row-key="currentRowKey"
-        :row-class-name="rowClassName"
-        :row-style="rowStyle"
-        :cell-class-name="cellClassName"
-        :cell-style="cellStyle"
-        :header-row-class-name="headerRowClassName"
-        :header-row-style="headerRowStyle"
-        :header-cell-class-name="headerCellClassName"
-        :header-cell-style="headerCellStyle"
-        :row-key="rowKey"
-        :empty-text="emptyText"
-        :expand-row-keys="expandRowKeys"
-        :default-sort="defaultSort"
-        :tooltip-effect="tooltipEffect"
-        :show-summary="showSummary"
-        :sum-text="sumText"
-        :summary-method="summaryMethod"
-        :span-method="spanMethod"
-        :select-on-indeterminate="selectOnIndeterminate"
-        :indent="indent"
-        :lazy="lazy"
-        :load="load"
-        :tree-props="treeProps"
+        :height="$attrs.height"
+        :border="$attrs.border"
+        :stripe="$attrs.stripe"
+        :show-header="$attrs.showHeader"
+        :highlight-current-row="$attrs.highlightCurrentRow"
+        :current-row-key="$attrs.currentRowKey"
+        :row-class-name="$attrs.rowClassName"
+        :row-style="$attrs.rowStyle"
+        :cell-class-name="$attrs.cellClassName"
+        :cell-style="$attrs.cellStyle"
+        :header-row-class-name="$attrs.headerRowClassName"
+        :header-row-style="$attrs.headerRowStyle"
+        :header-cell-class-name="$attrs.headerCellClassName"
+        :header-cell-style="$attrs.headerCellStyle"
+        :row-key="$attrs.rowKey"
+        :empty-text="$attrs.emptyText"
+        :expand-row-keys="$attrs.expandRowKeys"
+        :default-sort="$attrs.defaultSort"
+        :tooltip-effect="$attrs.tooltipEffect"
+        :show-summary="$attrs.showSummary"
+        :sum-text="$attrs.sumText"
+        :summary-method="$attrs.summaryMethod"
+        :span-method="$attrs.spanMethod"
+        :select-on-indeterminate="$attrs.selectOnIndeterminate"
+        :indent="$attrs.indent"
+        :lazy="$attrs.lazy"
+        :load="$attrs.load"
+        :tree-props="$attrs.treeProps"
         style="width: 100%">
             <template v-if="options">
                 <el-table-column v-if="hasCheckBox"  type="selection" width="70"></el-table-column>
@@ -66,10 +66,7 @@ import './table-render'
 import { httpGet } from  '@/util/http'
 import { getField } from  '@/util/util'
 export default {
-    props:['options', 'data', 'height', 'stripe', 'border', 'size', 'showHeader', 'fit', 'highlight-current-row', 'current-row-key', 
-        'row-class-name', 'row-style', 'cell-class-name', 'cell-style', 'header-row-class-name', 'header-row-style', 'header-cell-class-name', 
-        'header-cell-style', 'row-key', 'empty-text', 'expand-row-keys', 'default-sort', 'tooltip-effect', 
-        'show-summary', 'sum-text', 'summary-method', 'span-method', 'select-on-indeterminate', 'indent', 'lazy', 'load', 'tree-props'],
+    props:['options', 'data'],
     data(){
         return {
             url: '',
@@ -145,7 +142,7 @@ export default {
             this.query();
         },
         changeSize (val) {
-            this.option.pageSize = val;
+            this.form.pageSize = val;
             this.query();
         }, 
         initDataByResponse(response) {
